@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="angular.js"></script>
+    <script src="App.js"></script>
+    <title>Employee Management</title>
+    <style>
+        th {
+            padding: 5px;
+        }
+
+        td {
+            padding: 5px;
+        }
+
+        .form-section {
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body ng-controller="myctrl">
+
+    <h2>Employee data</h2>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Job Type</th>
+            <th>Department</th>
+            <th>Salary</th>
+            <th>City</th>
+            <th>Email</th>
+            <th>Active</th>
+            <th>Action</th>
+        </tr>
+
+        <tr ng-repeat="e in employee">
+            <td>{{e.eid}}</td>
+            <td>{{e.name | uppercase}}</td>
+            <td>{{e.gender}}</td>
+            <td>{{e.jobType}}</td>
+            <td>{{e.department}}</td>
+            <td>{{e.salary | currency:'₹'}}</td>
+            <td>{{e.city}}</td>
+            <td>{{e.email | lowercase}}</td>
+            <td>{{e.isActive ? 'Yes' : 'No'}}</td>
+            <td><button ng-click="edit(e)">Edit</button> |
+                <button ng-click="deletedata(e.eid)">Delete</button>
+            </td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <div class="form-section">
+        <h3>Add / Update / Patch Employee</h3>
+        <form method="post">
+            ID:<br>
+            <input type="number" ng-model="newemployee.eid"><br><br>
+
+            Name:<br>
+            <input type="text" ng-model="newemployee.name"><br><br>
+
+            <!-- NEW: Radio Buttons for Gender -->
+            Gender:<br>
+            <input type="radio" ng-model="newemployee.gender" value="Male" name="gender"> Male
+            <input type="radio" ng-model="newemployee.gender" value="Female" name="gender"> Female
+            <br><br>
+
+            <!-- NEW: Dropdown for Job Type -->
+            Job Type:<br>
+            <select ng-model="newemployee.jobType">
+                <option value="">--Select Job Type--</option>
+                <option value="Full-Time">Full-Time</option>
+                <option value="Part-Time">Part-Time</option>
+                <option value="Contract">Contract</option>
+                <option value="Internship">Internship</option>
+            </select>
+            <br><br>
+
+            Department:<br>
+            <input type="text" ng-model="newemployee.department"><br><br>
+
+            Salary:<br>
+            <input type="number" ng-model="newemployee.salary"><br><br>
+
+            City:<br>
+            <input type="text" ng-model="newemployee.city"><br><br>
+
+            Email:<br>
+            <input type="text" ng-model="newemployee.email"><br><br>
+
+            <!-- NEW: Checkbox for Boolean values -->
+            <input type="checkbox" ng-model="newemployee.isActive"> Is Active Employee?
+            <br><br>
+
+            <button type="button" ng-click="adddata(newemployee)">Add Data</button>
+            <button type="button" ng-click="updatedata(newemployee)">Update Data</button>
+
+            <p style="color: green; font-weight: bold;">{{msg}}</p>
+
+        </form>
+    </div>
+</body>
+
+</html>

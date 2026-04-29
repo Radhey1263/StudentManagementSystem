@@ -1,40 +1,108 @@
-// Import required modules
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
-
-// Import database configuration
-const connectDB = require('./server/config/db');
-
-// Import routes
-const studentRoutes = require('./server/routes/studentRoutes');
-
-// Initialize Express app
+const express = require('express')
+const mongoose = require('mongoose')
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+app.use(express.static('Public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from public folder
-app.use(express.static(path.join(__dirname, 'public')));
+mongoose.connect('mongodb://localhost:27017/emp_db');
 
-// API Routes
-app.use('/api/students', studentRoutes);
+mongoose.connection.on('connected', () => {
+    console.log("mongodb connected successfully");
+})
 
-// Root route
+// Schema updated to relax 'required' constraints so partial form submissions don't fail
+const empschema = mongoose.Schema({
+    eid: {
+        type: Number,
+        required: true,
+        unique: true,
+        min: 1
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    department: {
+        type: String,
+        trim: true
+    },
+    salary: {
+        type: Number,
+        min: 0
+    },
+    city: {
+        type: String,
+        trim: true
+    },
+    email: {
+        type: String,
+        lowercase: true,
+        trim: true
+    },
+    gender: {
+        type: String,
+        // Removed required: true so you can submit without it failing
+        // Added empty string '' to enum so clearing the form doesn't crash it
+        enum: ['Male', 'Female']
+    },
+    jobType: {
+        type: String,
+        // Removed required: true
+        // Added empty string '' to allow the default dropdown state
+        enum: ['Full-Time', 'Part-Time', 'Contract', 'Internship']
+    },
+    isActive: {
+        type: Boolean,
+        default: false
+    }
+});
+
+
+const employeemodel = mongoose.model('employeemodel', empschema, 'employee_details');
+
+
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(__dirname + '/Public/view.html')
+})
+
+
+// get data
+app.get('/api/readdata', (req, res) => {
+    employeemodel.find()
+        .then(data => res.send(data))
+        .catch(err => res.send(err))
+})
+
+
+// add  the data
+app.post('/api/adddata', (req, res) => {
+    employeemodel.create(req.body)
+        .then(() =>
+            res.json({ message: " employee added succesfully" }))
+        .catch((err) =>
+            res.json({ message: err.message }))
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Open http://localhost:${PORT} in your browser`);
-});
+app.delete('/api/deletedata/:id', (req, res) => {
+    employeemodel.deleteOne({ eid: req.params.id })
+        .then(() =>
+            res.json({ message: " delete succesfully" }))
+        .catch((err) =>
+            res.json({ message: err.message }))
+})
+
+app.put('/api/updatedata/:id', (req, res) => {
+    employeemodel.updateOne({
+        eid: req.params.id
+    }, { $set: req.body })
+        .then(() => res.json({ message: " student update succesfully" }))
+        .catch((err) => res.json({ message: err.message }))
+})
+
+app.listen(3000, () => {
+    console.log("3000 port is running");
+})
